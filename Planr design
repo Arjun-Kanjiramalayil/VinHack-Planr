@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Day Planner</title>
+<style>
+/* Nightfury Black & Blue Theme */
+
+body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    background: #0B0C10;
+    color: #C5C6C7;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    color: #66FCF1;
+}
+
+nav a {
+    margin: 0 6px;
+    text-decoration: none;
+    padding: 8px 14px;
+    background: #1F2833;
+    color: #66FCF1;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: scale(0.85);
+    animation: fadeScaleIn 0.6s forwards ease;
+}
+nav a:nth-child(1) { animation-delay: 0.1s; }
+nav a:nth-child(2) { animation-delay: 0.2s; }
+nav a:nth-child(3) { animation-delay: 0.3s; }
+nav a:nth-child(4) { animation-delay: 0.4s; }
+nav a:nth-child(5) { animation-delay: 0.5s; }
+nav a:nth-child(6) { animation-delay: 0.6s; }
+nav a:nth-child(7) { animation-delay: 0.7s; }
+
+nav a:hover, nav a.selected {
+    background: #45A29E;
+    color: #0B0C10;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px #45A29E;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #1F2833;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 15px #45A29E88;
+}
+
+th, td {
+    border: 1px solid #45A29E;
+    padding: 10px;
+    vertical-align: top;
+    color: #C5C6C7;
+}
+
+th {
+    background: #0B0C10;
+}
+
+form {
+    margin-top: 20px;
+    background: #1F2833;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #45A29E88;
+    color: #C5C6C7;
+}
+
+input[type=text], select, input[type=number], input[type=date], textarea {
+    width: 100%;
+    margin: 5px 0 12px;
+    padding: 8px;
+    box-sizing: border-box;
+    background: #0B0C10;
+    color: #66FCF1;
+    border: 1px solid #45A29E;
+    border-radius: 6px;
+    transition: box-shadow 0.3s ease;
+}
+
+input[type=text]:focus, select:focus, input[type=number]:focus, input[type=date]:focus, textarea:focus {
+    box-shadow: 0 0 8px 2px #45A29E;
+    outline: none;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button, .remove-slot-btn {
+    background: linear-gradient(135deg, #45A29E, #66FCF1);
+    color: #0B0C10;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+    user-select: none;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px #45A29Eaa;
+}
+
+button:hover, .remove-slot-btn:hover {
+    background: linear-gradient(135deg, #66FCF1, #45A29E);
+    box-shadow: 0 6px 20px #45A29Eee;
+    transform: scale(1.05);
+}
+
+.slot-content {
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #66FCF1;
+    opacity: 0;
+    transform: scale(0.9);
+    animation: fadeScaleIn 0.5s forwards ease;
+}
+
+tbody tr:nth-child(odd) td > .slot-content { animation-delay: 0.1s; }
+tbody tr:nth-child(even) td > .slot-content { animation-delay: 0.2s; }
+
+tbody tr td > .slot-content:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 8px #66FCF1aa;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+ul li {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeSlideUp 0.6s forwards ease;
+    color: #C5C6C7;
+}
+
+ul li:nth-child(odd) { animation-delay: 0.15s; }
+ul li:nth-child(even) { animation-delay: 0.35s; }
+
+ul li:hover {
+    color: #45A29E;
+    cursor: default;
+    transition: color 0.3s ease;
+}
+
+#ai-planned-grid {
+    padding: 10px;
+    display:flex; 
+    flex-wrap:wrap; 
+    gap:10px; 
+    justify-content:center; 
+    margin-bottom:30px;
+}
+
+.planned-slot {
+    background: linear-gradient(135deg, #13293D 0%, #1F4E79 99%);
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(34, 112, 147, 0.75);
+    padding: 14px 20px;
+    width: 180px;
+    font-weight: 700;
+    color: #66FCF1;
+    cursor: default;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    animation: slotFadeIn 0.6s ease forwards;
+    opacity: 0;
+}
+
+.planned-slot:hover {
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 12px 25px rgba(102, 252, 241, 0.9);
+}
+
+.slot-type {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-shadow: 0 0 2px #45A29E;
+}
+
+@keyframes fadeScaleIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeSlideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slotFadeIn {
+    to {
+        opacity: 1;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>Student Day Planner</h1>
+
+<nav>
+  {% for idx, day_name in enumerated_weekdays %}
+    <a href="{{ url_for('timetable', day=idx) }}" class="{{ 'selected' if idx == weekday else '' }}">{{ day_name }}</a>
+  {% endfor %}
+</nav>
+
+<h2>{{ weekday_name }} Timetable</h2>
+<table>
+  <thead>
+    <tr><th>Time</th><th>Slots</th><th>Edit Slot</th></tr>
+  </thead>
+  <tbody>
+  {% for hour in rooms %}
+    <tr>
+      <td>{{ ("%d:00"|format(hour)) }}</td>
+      <td>
+        {% if slots_by_hour[hour] %}
+          {% for slot in slots_by_hour[hour] %}
+            <div class="slot-content">
+                {{ slot.content }} <small>({{ slot.content_type }})</small>
+                <form method="post" action="{{ url_for('delete_slot') }}" style="display:inline;" 
+                  onsubmit="return confirm('Are you sure you want to remove this slot?');">
+                  <input type="hidden" name="slot_id" value="{{ slot.id }}">
+                  <button type="submit" class="remove-slot-btn" title="Remove this slot">Remove</button>
+                </form>
+            </div>
+          {% endfor %}
+        {% else %}
+          <em>Free</em>
+        {% endif %}
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('save_slot') }}">
+          <input type="hidden" name="slot_id" value="">
+          <input type="hidden" name="weekday" value="{{ weekday }}">
+          <input type="hidden" name="start_hour" value="{{ hour }}">
+          <input type="hidden" name="end_hour" value="{{ hour + 1 }}">
+          <input type="text" name="content" placeholder="e.g., Biology Class" required>
+          <select name="content_type">
+            <option value="class">Class</option>
+            <option value="study">Study</option>
+            <option value="assignment">Assignment</option>
+            <option value="event">Event</option>
+            <option value="gym">Gym</option>
+            <option value="break">Break</option>
+          </select><br>
+          <button type="submit">Save</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h3>AI Suggested Slots Overview</h3>
+<div id="ai-planned-grid">
+  {% set sample_plan = [
+    {'weekday': 0, 'start_hour': 9, 'end_hour': 11, 'content': 'Physics Study', 'content_type': 'study'},
+    {'weekday': 4, 'start_hour': 18, 'end_hour': 19, 'content': 'Gym', 'content_type': 'gym'},
+    {'weekday': 6, 'start_hour': 14, 'end_hour': 16, 'content': 'Evening Sport', 'content_type': 'sport'}
+  ] %}
+  {% for slot in sample_plan %}
+    <div class="planned-slot" title="{{ slot.content }} (Day: {{ enumerated_weekdays[slot.weekday][1] }})">
+      <div><strong>{{ slot.content }}</strong></div>
+      <div>{{ enumerated_weekdays[slot.weekday][1] }}, {{ slot.start_hour }}:00 - {{ slot.end_hour }}:00</div>
+      <div class="slot-type">{{ slot.content_type.capitalize() }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<h3>Reminders (Assignments & Events)</h3>
+<ul>
+  {% set has_reminders = false %}
+  {% for activity in activities %}
+    {% if activity.kind in ['assignment', 'event'] %}
+      {% set has_reminders = true %}
+      <li>
+        <strong>{{ activity.kind.capitalize() }}</strong>: {{ activity.title }}
+        {% if activity.due_date %} - Due: {{ activity.due_date.strftime('%Y-%m-%d') }}{% endif %}
+        <form method="post" action="{{ url_for('delete_activity') }}" style="display:inline;" 
+          onsubmit="return confirm('Are you sure you want to remove this {{ activity.kind }}?');">
+          <input type="hidden" name="activity_id" value="{{ activity.id }}">
+          <button type="submit" class="remove-slot-btn" title="Remove this {{ activity.kind }}">Remove</button>
+        </form>
+      </li>
+    {% endif %}
+  {% endfor %}
+  {% if not has_reminders %}
+    <li>No assignments or events planned</li>
+  {% endif %}
+</ul>
+
+<h3>Add New Activity</h3>
+<form method="post" action="{{ url_for('add_activity') }}">
+  <label>Kind:
+    <select name="kind" required>
+      <option value="assignment">Assignment</option>
+      <option value="event">Event</option>
+      <option value="study_goal">Study Goal</option>
+      <option value="workout">Workout</option>
+      <option value="sport">Sport</option>
+      <option value="break">Relaxation Break</option>
+    </select>
+  </label><br>
+  <label>Title:<br>
+    <input type="text" name="title" required placeholder="e.g., Math Homework or Lunch Break">
+  </label><br>
+  <label>Duration (minutes):<br>
+    <input type="number" name="duration_minutes" min="0" required placeholder="Time needed in minutes">
+  </label><br>
+  <label>Due date (optional):<br>
+    <input type="date" name="due_date" placeholder="YYYY-MM-DD">
+  </label><br>
+  <label>Details:<br>
+    <textarea name="details" rows="3" placeholder="Any additional info or notes"></textarea>
+  </label><br>
+  <button type="submit">Add Activity</button>
+</form>
+
+<form method="post" action="{{ url_for('plan_week') }}" style="margin-top: 30px; text-align:center;">
+  <button type="submit" style="font-size:1.2em; background:#45A29E;">Plan the Week for Me</button>
+</form>
+
+</body>
+</html>
